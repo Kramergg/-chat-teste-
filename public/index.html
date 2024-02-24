@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+  
+    #chat-window {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    #chat-messages {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding-right: 20px;
+    }
+  
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f1f0f0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    .message-sender {
+      font-weight: bold;
+      color: #333;
+    }
+  
+    .message-text {
+      margin-top: 5px;
+      color: #555;
+    }
+  
+    #message-input {
+      width: calc(100% - 100px);
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    #send-button {
+      width: 80px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+  
+    #send-button:hover {
+      background-color: #0056b3;
+    }
+  
+    #identification-form {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+  
+    #identification-input {
+      flex-grow: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    #identification-button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+  
+    #identification-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+  
+</head>
+<body>
+    <div id="identification-form">
+        <input type="text" id="identification-input" placeholder="Digite seu nome">
+        <button id="identification-button">Identificar</button>
+      </div>
+      
+  <div id="chat-window">
+    <div id="chat-messages"></div>
+    <input type="text" id="message-input">
+    <button id="send-button">Enviar</button>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let identification = '';
+  
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const identificationInput = document.getElementById('identification-input');
+    const identificationButton = document.getElementById('identification-button');
+    const identificationForm = document.getElementById('identification-form');
+  
+    identificationButton.addEventListener('click', () => {
+      const name = identificationInput.value.trim();
+      if (name) {
+        identification = name;
+        identificationForm.style.display = 'none';
+        messageInput.focus();
+      }
+    });
+  
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        socket.emit('message', { identification, message });
+        messageInput.value = '';
+      }
+    });
+  
+    socket.on('message', (data) => {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+  
+      const senderElement = document.createElement('span');
+      senderElement.classList.add('message-sender');
+      senderElement.textContent = data.identification + ': ';
+  
+      const textElement = document.createElement('span');
+      textElement.classList.add('message-text');
+      textElement.textContent = data.message;
+  
+      messageElement.appendChild(senderElement);
+      messageElement.appendChild(textElement);
+  
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+  </script>
+  
+</body>
+</html>
